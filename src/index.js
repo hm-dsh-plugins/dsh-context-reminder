@@ -1,0 +1,12 @@
+/**
+ * Host half of `dsh-context-reminder`.
+ *
+ * Nothing runs here: the whole feature is browser-side. This entry exists so the
+ * Loader has a row to scan — the `dsh.client` declaration and the `./client`
+ * export are what compose the reminder into the web client.
+ */
+
+export const name = 'dsh-context-reminder'
+
+/** No host-side work. */
+export function apply() {}

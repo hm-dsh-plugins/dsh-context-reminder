@@ -1,0 +1,12 @@
+# Dependencies are installed, never committed.
+node_modules/
+# Local npm cache used when the default cache directory is not writable.
+.npm-cache/
+
+# Build output is committed on purpose: profiles install this package with a
+# `link:` dependency and load `lib/` directly, so a clone must be loadable
+# without running a build first.
+
+# Logs and OS noise.
+*.log
+Thumbs.db
