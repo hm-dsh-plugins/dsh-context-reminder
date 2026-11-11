@@ -31,14 +31,14 @@
 profile 用 pnpm 的 `link:` 协议——**改完 `lib/` 刷新页面就生效**，不用重装：
 
 ```json
-"dsh-context-reminder": "link:S:/local/share/repos/dsh-plugins/dsh-context-reminder"
+"dsh-context-reminder": "link:S:/local/repos/dsh-plugins/dsh-context-reminder"
 ```
 
 首次接线：
 
 ```powershell
 cd S:\local\app\deepseek-harness\content
-node --import tsx/esm apps/cli/src/bin.ts plugin --profile web add S:\local\share\repos\dsh-plugins\dsh-context-reminder
+node --import tsx/esm apps/cli/src/bin.ts plugin --profile web add S:\local\repos\dsh-plugins\dsh-context-reminder
 ```
 
 装完重启 DSH，浏览器再刷新一次。卸载用包名 `dsh-context-reminder`。
