@@ -20,7 +20,7 @@ const NS = 'dshContextReminder'
  * not merely used: cordis resolves a service on `ctx` only for fibers that
  * declare it, and declaring also makes load order irrelevant.
  */
-export const inject = ['slots', 'locale', 'remote']
+export const inject = ['slots', 'locale', 'remote', 'remote.commands']
 
 /**
  * Run `/compact` for one Session through the Host command plane.
