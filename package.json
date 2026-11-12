@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Reminds you to compact the conversation when context usage reaches 30%, then every further 10%.",
   "type": "module",
+  "author": "Hiro Muraki",
   "license": "GPL-3.0-or-later",
   "main": "lib/index.js",
   "exports": {
