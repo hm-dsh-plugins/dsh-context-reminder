@@ -1,9 +1,9 @@
 /**
  * Reminder levels and the per-Session latch that keeps one level to one dialog.
  *
- * Occupancy starts to matter at 30% and then again every further 10 points
- * (40, 50, …). "Later" only silences the level that was shown: the next level
- * still raises a fresh reminder. Falling back below 30% — a compaction, a new
+ * Occupancy starts to matter at 25% and then again every further 10 points
+ * (35, 45, …). "Later" only silences the level that was shown: the next level
+ * still raises a fresh reminder. Falling back below 25% — a compaction, a new
  * Session, a cleared history — releases the latch, so climbing back up starts
  * the ladder over.
  *
@@ -12,19 +12,22 @@
  */
 
 /** The occupancy that raises the first reminder. */
-export const START_PERCENT = 30
+export const START_PERCENT = 25
 
 /** How many further points separate one reminder from the next. */
 export const STEP_PERCENT = 10
 
 /**
  * The ladder step a given occupancy belongs to.
+ *
+ * Steps are counted from the start rather than from zero, so the ladder is
+ * 25, 35, 45 … even though the start is not a multiple of the step.
  * @param {number} percent - integer occupancy, 0 to 100.
- * @returns {number | null} 30, 40, 50 …; null below the first step.
+ * @returns {number | null} 25, 35, 45 …; null below the first step.
  */
 export function reminderLevel(percent) {
   if (!Number.isFinite(percent) || percent < START_PERCENT) return null
-  return Math.floor(percent / STEP_PERCENT) * STEP_PERCENT
+  return START_PERCENT + Math.floor((percent - START_PERCENT) / STEP_PERCENT) * STEP_PERCENT
 }
 
 /** Highest level already shown, per Session. Module-scoped: one latch for every mount. */

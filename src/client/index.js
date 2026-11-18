@@ -2,9 +2,9 @@
  * Browser half of `dsh-context-reminder`.
  *
  * One empty seat at the bottom of the composer watches the active Session.
- * When a turn finishes and the reported context occupancy reaches 30%, it
+ * When a turn finishes and the reported context occupancy reaches 25%, it
  * offers to compact; declining only silences that level, and every further
- * 10% (40, 50, …) asks again. The seat draws nothing until one of those
+ * 10% (35, 45, …) asks again. The seat draws nothing until one of those
  * moments.
  */
 import { ContextReminder } from './ContextReminder.jsx'

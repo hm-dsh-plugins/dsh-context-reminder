@@ -2,9 +2,9 @@
  * Checks the reminder ladder, then loads the built browser bundle outside a
  * browser and runs its `apply()` against a stub context.
  *
- * The ladder check covers the rule the feature exists for: 30% raises the
+ * The ladder check covers the rule the feature exists for: 25% raises the
  * first reminder, declining silences only that level, and falling back below
- * 30% re-arms it. The bundle check catches the wiring mistake that would
+ * 25% re-arms it. The bundle check catches the wiring mistake that would
  * otherwise be silent — a plugin that loads but registers no seat.
  */
 import assert from 'node:assert/strict'
@@ -15,12 +15,12 @@ import {
 
 // The ladder itself.
 assert.equal(reminderLevel(5), null)
-assert.equal(reminderLevel(29), null)
-assert.equal(reminderLevel(30), 30)
-assert.equal(reminderLevel(39), 30)
-assert.equal(reminderLevel(40), 40)
-assert.equal(reminderLevel(42), 40)
-assert.equal(reminderLevel(100), 100)
+assert.equal(reminderLevel(24), null)
+assert.equal(reminderLevel(25), 25)
+assert.equal(reminderLevel(34), 25)
+assert.equal(reminderLevel(35), 35)
+assert.equal(reminderLevel(42), 35)
+assert.equal(reminderLevel(100), 95)
 
 // Occupancy mirrors the composer ring: projected first, then pressure, capped.
 assert.equal(occupancyPercent({ pressureTokens: 32_000, projectedTokens: 6_000, contextWindow: 128_000 }), 5)
@@ -33,23 +33,23 @@ assert.equal(occupancyPercent(undefined), null)
 // One Session: every further 10% asks again, and only then.
 forgetSession('s1')
 assert.equal(dueReminder('s1', 12), null)
-assert.deepEqual(dueReminder('s1', 31), { level: 30, percent: 31 })
+assert.deepEqual(dueReminder('s1', 26), { level: 25, percent: 26 })
 assert.equal(dueReminder('s1', 33), null, 'same level must not reopen the dialog')
-assert.deepEqual(dueReminder('s1', 46), { level: 40, percent: 46 })
-assert.equal(dueReminder('s1', 47), null)
-assert.deepEqual(dueReminder('s1', 52), { level: 50, percent: 52 })
+assert.deepEqual(dueReminder('s1', 41), { level: 35, percent: 41 })
+assert.equal(dueReminder('s1', 42), null)
+assert.deepEqual(dueReminder('s1', 52), { level: 45, percent: 52 })
 assert.equal(dueReminder('s1', null), null)
 
-// A compaction (or a cleared history) drops below 30% and re-arms the ladder.
+// A compaction (or a cleared history) drops below 25% and re-arms the ladder.
 assert.equal(dueReminder('s1', 12), null)
 assert.equal(shownLevel('s1'), null)
-assert.deepEqual(dueReminder('s1', 31), { level: 30, percent: 31 })
+assert.deepEqual(dueReminder('s1', 26), { level: 25, percent: 26 })
 
 // Sessions latch independently.
 forgetSession('s2')
 assert.equal(shownLevel('s2'), null)
-assert.deepEqual(dueReminder('s2', 35), { level: 30, percent: 35 })
-assert.deepEqual(dueReminder('s1', 41), { level: 40, percent: 41 })
+assert.deepEqual(dueReminder('s2', 30), { level: 25, percent: 30 })
+assert.deepEqual(dueReminder('s1', 41), { level: 35, percent: 41 })
 
 // --- the built bundle ------------------------------------------------------
 
@@ -127,4 +127,4 @@ assert.equal(typeof component, 'function')
 assert.equal(typeof entry.inject, 'function')
 assert.equal(typeof entry.inject().compact, 'function')
 
-console.log(`smoke OK — ${definition.id}, ladder 30/40/50, ${registered.length} registration, teardown OK`)
+console.log(`smoke OK — ${definition.id}, ladder 25/35/45, ${registered.length} registration, teardown OK`)
