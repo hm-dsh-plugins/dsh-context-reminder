@@ -1,7 +1,7 @@
 {
   "name": "dsh-context-reminder",
-  "version": "0.1.1",
-  "description": "Reminds you to compact the conversation when context usage reaches 25%, then every further 10%.",
+  "version": "2026.11.24-1",
+  "description": "Reminds you to compact the conversation when context usage reaches a configurable start (25% by default), then again every further step (10% by default).",
   "type": "module",
   "author": "Hiro Muraki",
   "license": "GPL-3.0-or-later",
@@ -44,6 +44,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:client": "node scripts/build.mjs --client-only",
+    "bump": "node scripts/bump-version.mjs",
     "smoke": "node scripts/smoke.mjs",
     "prepack": "npm run build"
   },
@@ -55,5 +56,8 @@
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.19.0"
   }
 }

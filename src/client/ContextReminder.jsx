@@ -6,7 +6,8 @@
  * after it has observed a turn run, so merely opening an old conversation
  * raises nothing by itself. Occupancy comes from the same `contextPressure`
  * projection the composer's ring draws, so the figure in the dialog and the
- * figure on screen cannot disagree.
+ * figure on screen cannot disagree. The ladder itself is the profile's: it
+ * arrives through Settings, and the seat judges nothing until it has arrived.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -15,16 +16,20 @@ import { dueReminder, occupancyPercent } from './reminder.js'
 /**
  * The reminder seat.
  * @param props - the Session slot's standard props: `sessionId`, `useSession`
- * and `useProjection`, the bound `t` seat, and the injected `compact` action.
+ * and `useProjection`, the bound `t` seat, and the injected `compact` action
+ * and `limits` reader.
  * @returns the dialog while one is due; nothing the rest of the time.
  */
-export function ContextReminder({ sessionId, t, useSession, useProjection, compact }) {
+export function ContextReminder({ sessionId, t, useSession, useProjection, compact, limits }) {
   const running = useSession(snapshot => snapshot.running)
   const pressure = useProjection('contextPressure')
   const percent = occupancyPercent(pressure)
   const [reminder, setReminder] = useState(null)
   const [compacting, setCompacting] = useState(false)
   const [failure, setFailure] = useState(null)
+  // Null until the profile's ladder is read: judging a frame against the
+  // defaults first could raise a level the profile does not use.
+  const [ladder, setLadder] = useState(null)
   // Only a turn boundary this seat actually saw may raise a reminder; a
   // conversation resumed at 60% is not a fresh reason to interrupt.
   const sawTurn = useRef(false)
@@ -32,16 +37,23 @@ export function ContextReminder({ sessionId, t, useSession, useProjection, compa
   latest.current = percent
 
   useEffect(() => {
+    let live = true
+    limits().then((value) => { if (live) setLadder(value) })
+    return () => { live = false }
+  }, [limits])
+
+  useEffect(() => {
+    if (ladder === null) return
     if (running) {
       sawTurn.current = true
       return
     }
     if (!sawTurn.current) return
-    const due = dueReminder(sessionId, latest.current)
+    const due = dueReminder(sessionId, latest.current, ladder)
     if (due === null) return
     setReminder(due)
     setFailure(null)
-  }, [running, percent, sessionId])
+  }, [running, percent, sessionId, ladder])
 
   const close = useCallback(() => {
     setReminder(null)

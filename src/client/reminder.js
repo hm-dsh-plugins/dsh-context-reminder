@@ -1,33 +1,43 @@
 /**
  * Reminder levels and the per-Session latch that keeps one level to one dialog.
  *
- * Occupancy starts to matter at 25% and then again every further 10 points
+ * Occupancy starts to matter at the configured start — 25% unless the profile
+ * says otherwise — and then again every further step, ten points by default
  * (35, 45, …). "Later" only silences the level that was shown: the next level
- * still raises a fresh reminder. Falling back below 25% — a compaction, a new
- * Session, a cleared history — releases the latch, so climbing back up starts
- * the ladder over.
+ * still raises a fresh reminder. Falling back below the start — a compaction,
+ * a new Session, a cleared history — releases the latch, so climbing back up
+ * starts the ladder over.
  *
  * Pure data and arithmetic: no React, no DOM, so the ladder can be tested
  * without a browser.
  */
 
-/** The occupancy that raises the first reminder. */
-export const START_PERCENT = 25
+/** The start used when the profile does not override it. */
+export const DEFAULT_START_PERCENT = 25
 
-/** How many further points separate one reminder from the next. */
-export const STEP_PERCENT = 10
+/** The step used when the profile does not override it. */
+export const DEFAULT_STEP_PERCENT = 10
+
+/** The ladder used when the profile offers no usable settings. */
+export const DEFAULT_LIMITS = Object.freeze({
+  startPercent: DEFAULT_START_PERCENT,
+  stepPercent: DEFAULT_STEP_PERCENT,
+})
 
 /**
  * The ladder step a given occupancy belongs to.
  *
- * Steps are counted from the start rather than from zero, so the ladder is
- * 25, 35, 45 … even though the start is not a multiple of the step.
+ * Steps are counted from the start rather than from zero, so a start that is
+ * not a multiple of the step still produces a ladder that begins exactly at
+ * the start.
  * @param {number} percent - integer occupancy, 0 to 100.
- * @returns {number | null} 25, 35, 45 …; null below the first step.
+ * @param {{ startPercent: number, stepPercent: number }} [limits] - the ladder in force.
+ * @returns {number | null} the step, or null below the start.
  */
-export function reminderLevel(percent) {
-  if (!Number.isFinite(percent) || percent < START_PERCENT) return null
-  return START_PERCENT + Math.floor((percent - START_PERCENT) / STEP_PERCENT) * STEP_PERCENT
+export function reminderLevel(percent, limits = DEFAULT_LIMITS) {
+  if (!Number.isFinite(percent) || percent < limits.startPercent) return null
+  return limits.startPercent
+    + Math.floor((percent - limits.startPercent) / limits.stepPercent) * limits.stepPercent
 }
 
 /** Highest level already shown, per Session. Module-scoped: one latch for every mount. */
@@ -56,11 +66,12 @@ export function forgetSession(sessionId) {
  * on every projection frame while the same level is on screen.
  * @param {string} sessionId - Session identity.
  * @param {number | null} percent - occupancy just read, or null while unknown.
+ * @param {{ startPercent: number, stepPercent: number }} [limits] - the ladder in force.
  * @returns {{ level: number, percent: number } | null} the reminder to show.
  */
-export function dueReminder(sessionId, percent) {
+export function dueReminder(sessionId, percent, limits = DEFAULT_LIMITS) {
   if (percent === null) return null
-  const level = reminderLevel(percent)
+  const level = reminderLevel(percent, limits)
   if (level === null) {
     forgetSession(sessionId)
     return null

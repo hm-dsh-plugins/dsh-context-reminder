@@ -8,6 +8,7 @@
  * moments.
  */
 import { ContextReminder } from './ContextReminder.jsx'
+import { loadLimits } from './config.js'
 import { en, zh } from './locales.js'
 
 export const name = 'dsh-context-reminder'
@@ -20,7 +21,7 @@ const NS = 'dshContextReminder'
  * not merely used: cordis resolves a service on `ctx` only for fibers that
  * declare it, and declaring also makes load order irrelevant.
  */
-export const inject = ['slots', 'locale', 'remote', 'remote.commands']
+export const inject = ['slots', 'locale', 'remote', 'remote.commands', 'remote.settings']
 
 /**
  * Run `/compact` for one Session through the Host command plane.
@@ -48,12 +49,17 @@ async function compactContext(ctx, sessionId) {
 export function apply(ctx) {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), `${name}: dictionaries`)
 
+  // One function each, defined once: the seat's props stay identical across
+  // renders, so its effects do not restart on every projection frame.
+  const compact = (sessionId) => compactContext(ctx, sessionId)
+  const limits = () => loadLimits(ctx)
+
   ctx.effect(() => ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register(
     {
       name: 'conversation.composer.dock',
       id: name,
       locale: NS,
-      inject: () => ({ compact: (sessionId) => compactContext(ctx, sessionId) }),
+      inject: () => ({ compact, limits }),
     },
     ContextReminder,
   )), `${name}: reminder seat`)

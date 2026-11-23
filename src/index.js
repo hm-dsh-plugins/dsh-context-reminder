@@ -1,12 +1,21 @@
 /**
  * Host half of `dsh-context-reminder`.
  *
- * Nothing runs here: the whole feature is browser-side. This entry exists so the
- * Loader has a row to scan — the `dsh.client` declaration and the `./client`
- * export are what compose the reminder into the web client.
+ * Nothing runs here at request time. This half exists to own the ladder's two
+ * settings: declaring them as volatile Config is what puts them on the
+ * profile's settings page, and it is also what the browser half reads back
+ * through `settings.describe`. Without this declaration the reminder would be
+ * fixed at build time and there would be nothing to configure.
  */
+import z from '@deepseek-ai/schemastery'
 
 export const name = 'dsh-context-reminder'
 
-/** No host-side work. */
+/** The ladder: where it starts, and how far apart its steps are. */
+export const Config = z.object({
+  startPercent: z.number().min(1).max(99).step(1).default(25).volatile(),
+  stepPercent: z.number().min(1).max(50).step(1).default(10).volatile(),
+})
+
+/** No host-side work: the seat lives in the browser. */
 export function apply() {}
